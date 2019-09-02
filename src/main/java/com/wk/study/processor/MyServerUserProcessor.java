@@ -1,6 +1,7 @@
 package com.wk.study.processor;
 
 import com.alipay.remoting.BizContext;
+import com.alipay.remoting.RemotingContext;
 import com.alipay.remoting.rpc.protocol.SyncUserProcessor;
 import com.wk.study.model.MyRequest;
 import com.wk.study.model.MyResponse;
@@ -15,6 +16,11 @@ import com.wk.study.model.MyResponse;
  * AsyncUserProcessor ：有一个 AsyncContext 存根，可以在当前线程，也可以在异步线程，调用 sendResponse 方法返回处理结果
  */
 public class MyServerUserProcessor extends SyncUserProcessor<MyRequest> {
+
+    @Override
+    public BizContext preHandleRequest(RemotingContext remotingCtx, MyRequest request) {
+        return super.preHandleRequest(remotingCtx, request);
+    }
 
     public Object handleRequest(BizContext bizContext, MyRequest myRequest) throws Exception {
         MyResponse myResponse = new MyResponse();
