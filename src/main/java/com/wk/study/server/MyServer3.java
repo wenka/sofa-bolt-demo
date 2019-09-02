@@ -1,6 +1,9 @@
 package com.wk.study.server;
 
 import com.alipay.remoting.BizContext;
+import com.alipay.remoting.Connection;
+import com.alipay.remoting.ConnectionEventProcessor;
+import com.alipay.remoting.ConnectionEventType;
 import com.alipay.remoting.config.switches.GlobalSwitch;
 import com.alipay.remoting.exception.RemotingException;
 import com.alipay.remoting.rpc.RpcServer;
@@ -13,18 +16,19 @@ import java.util.Scanner;
 /**
  * Created with IDEA
  * author:wenka wkwenka@gmail.com
- * Date:2019/09/02  下午 02:06
- * Description: 双工通信服务器端 基于 addr 链路模式
+ * Date:2019/09/02  下午 02:27
+ * Description: 双工通信服务器端 基于 connection 链路模式
  */
-public class MyServer2 {
+public class MyServer3 {
 
     public static void main(String[] args) throws InterruptedException, RemotingException {
         RpcServer rpcServer = new RpcServer(8888);
-        MyServerUserProcessor2 myServerUserProcessor2 = new MyServerUserProcessor2();
-        rpcServer.registerUserProcessor(myServerUserProcessor2);
+        MyServerUserProcessor myServerUserProcessor = new MyServerUserProcessor();
+        rpcServer.registerUserProcessor(myServerUserProcessor);
 
-        // 开启服务器端连接管理功能
-        rpcServer.switches().turnOn(GlobalSwitch.SERVER_MANAGE_CONNECTION_SWITCH);
+        // 创建并注册 ConnectionEventType.CONNECT 连接事件处理器
+        MyCONNECTEventProcessor myCONNECTEventProcessor = new MyCONNECTEventProcessor();
+        rpcServer.addConnectionEventProcessor(ConnectionEventType.CONNECT, myCONNECTEventProcessor);
 
         if (rpcServer.start()) {
             System.out.println("服务器端启动成功！");
@@ -35,7 +39,7 @@ public class MyServer2 {
                 String s = scanner.nextLine();
                 if (s != null && s.trim().length() > 0) {
                     myRequest.setRequest(s);
-                    Object o = rpcServer.invokeSync(myServerUserProcessor2.getRemoteAddr(), myRequest, 10 * 1000);
+                    Object o = rpcServer.invokeSync(myCONNECTEventProcessor.getConnection(), myRequest, 10 * 1000);
                     System.out.println(o);
                 }
             }
@@ -45,12 +49,9 @@ public class MyServer2 {
 
     }
 
-    static class MyServerUserProcessor2 extends SyncUserProcessor<MyRequest> {
-
-        private String remoteAddr;
+    static class MyServerUserProcessor extends SyncUserProcessor<MyRequest> {
 
         public Object handleRequest(BizContext bizContext, MyRequest myRequest) throws Exception {
-            this.remoteAddr = bizContext.getRemoteAddress();
             MyResponse myResponse = new MyResponse();
             if (myRequest != null) {
                 System.out.println("接受到的请求：" + myRequest);
@@ -62,9 +63,22 @@ public class MyServer2 {
         public String interest() {
             return MyRequest.class.getName();
         }
+    }
 
-        public String getRemoteAddr() {
-            return remoteAddr;
+    /**
+     * 连接事件处理器
+     */
+    static class MyCONNECTEventProcessor implements ConnectionEventProcessor {
+        // 存储连接，用于服务端向客户端发起远程通信
+        private Connection connection;
+
+        public void onEvent(String remoteAddr, Connection connection) {
+            System.out.println("有新连接加入：" + remoteAddr);
+            this.connection = connection;
+        }
+
+        public Connection getConnection() {
+            return connection;
         }
     }
 }
