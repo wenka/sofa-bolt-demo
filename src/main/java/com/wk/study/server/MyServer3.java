@@ -11,6 +11,7 @@ import com.alipay.remoting.rpc.protocol.SyncUserProcessor;
 import com.wk.study.model.MyRequest;
 import com.wk.study.model.MyResponse;
 
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -49,9 +50,9 @@ public class MyServer3 {
 
     }
 
-    static class MyServerUserProcessor extends SyncUserProcessor<MyRequest> {
+    static class MyServerUserProcessor extends SyncUserProcessor<Object> {
 
-        public Object handleRequest(BizContext bizContext, MyRequest myRequest) throws Exception {
+        public Object handleRequest(BizContext bizContext, Object myRequest) throws Exception {
             MyResponse myResponse = new MyResponse();
             if (myRequest != null) {
                 System.out.println("接受到的请求：" + myRequest);
