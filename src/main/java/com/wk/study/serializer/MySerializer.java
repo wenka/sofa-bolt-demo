@@ -14,6 +14,7 @@ import io.netty.buffer.Unpooled;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created with IDEA
@@ -23,6 +24,7 @@ import java.nio.charset.Charset;
  */
 public class MySerializer extends DefaultCustomSerializer {
 
+    private static AtomicInteger MSG_COUNT = new AtomicInteger(0);
 
     /**
      * Serialize the header of RequestCommand.
@@ -101,52 +103,57 @@ public class MySerializer extends DefaultCustomSerializer {
      * @throws SerializationException
      */
     public <T extends RequestCommand> boolean deserializeContent(T request) throws DeserializationException {
+//        System.out.println("序列化对象：" + (MSG_COUNT.incrementAndGet()));
         RpcRequestCommand rpcReq = (RpcRequestCommand) request;
         byte[] content = rpcReq.getContent();
+        if (content.length == 125){
+            ByteBuf byteBuf = Unpooled.wrappedBuffer(content);
+            CharSequence nonTrdTypCod = byteBuf.readCharSequence(2, Charset.defaultCharset());
+            CharSequence invtAcctID = byteBuf.readCharSequence(10, Charset.defaultCharset());
+            CharSequence membExcIdCod = byteBuf.readCharSequence(5, Charset.defaultCharset());
+            CharSequence ordrNo = byteBuf.readCharSequence(9, Charset.defaultCharset());
+            CharSequence dateLstUpdDat = byteBuf.readCharSequence(8, Charset.defaultCharset());
+            CharSequence ordrQty = byteBuf.readCharSequence(9, Charset.defaultCharset());
+            CharSequence ordrPrc = byteBuf.readCharSequence(8, Charset.defaultCharset());
+            CharSequence ordrEntTim = byteBuf.readCharSequence(9, Charset.defaultCharset());
+            CharSequence amount = byteBuf.readCharSequence(17, Charset.defaultCharset());
+            CharSequence partSubGrpIdCod = byteBuf.readCharSequence(3, Charset.defaultCharset());
+            CharSequence partNoTxt = byteBuf.readCharSequence(3, Charset.defaultCharset());
+            CharSequence partOsSubGrpIdCod = byteBuf.readCharSequence(3, Charset.defaultCharset());
+            CharSequence partOsNoTxt = byteBuf.readCharSequence(3, Charset.defaultCharset());
+            CharSequence acctTypCod = byteBuf.readCharSequence(1, Charset.defaultCharset());
+            CharSequence brnId = byteBuf.readCharSequence(5, Charset.defaultCharset());
+            CharSequence userOrdNum = byteBuf.readCharSequence(16, Charset.defaultCharset());
+            CharSequence text = byteBuf.readCharSequence(12, Charset.defaultCharset());
+            CharSequence deletedFlag = byteBuf.readCharSequence(1, Charset.defaultCharset());
+            CharSequence statusFlag = byteBuf.readCharSequence(1, Charset.defaultCharset());
 
-        ByteBuf byteBuf = Unpooled.wrappedBuffer(content);
-        CharSequence nonTrdTypCod = byteBuf.readCharSequence(2, Charset.defaultCharset());
-        CharSequence invtAcctID = byteBuf.readCharSequence(10, Charset.defaultCharset());
-        CharSequence membExcIdCod = byteBuf.readCharSequence(5, Charset.defaultCharset());
-        CharSequence ordrNo = byteBuf.readCharSequence(9, Charset.defaultCharset());
-        CharSequence dateLstUpdDat = byteBuf.readCharSequence(8, Charset.defaultCharset());
-        CharSequence ordrQty = byteBuf.readCharSequence(9, Charset.defaultCharset());
-        CharSequence ordrPrc = byteBuf.readCharSequence(8, Charset.defaultCharset());
-        CharSequence ordrEntTim = byteBuf.readCharSequence(9, Charset.defaultCharset());
-        CharSequence amount = byteBuf.readCharSequence(17, Charset.defaultCharset());
-        CharSequence partSubGrpIdCod = byteBuf.readCharSequence(3, Charset.defaultCharset());
-        CharSequence partNoTxt = byteBuf.readCharSequence(3, Charset.defaultCharset());
-        CharSequence partOsSubGrpIdCod = byteBuf.readCharSequence(3, Charset.defaultCharset());
-        CharSequence partOsNoTxt = byteBuf.readCharSequence(3, Charset.defaultCharset());
-        CharSequence acctTypCod = byteBuf.readCharSequence(1, Charset.defaultCharset());
-        CharSequence brnId = byteBuf.readCharSequence(5, Charset.defaultCharset());
-        CharSequence userOrdNum = byteBuf.readCharSequence(16, Charset.defaultCharset());
-        CharSequence text = byteBuf.readCharSequence(12, Charset.defaultCharset());
-        CharSequence deletedFlag = byteBuf.readCharSequence(1, Charset.defaultCharset());
-        CharSequence statusFlag = byteBuf.readCharSequence(1, Charset.defaultCharset());
-
-        OrderData orderData = new OrderData().setNonTrdTypCod(nonTrdTypCod.toString())
-                .setInvtAcctID(invtAcctID.toString())
-                .setMembExcIdCod(membExcIdCod.toString())
-                .setOrdrNo(ordrNo.toString())
-                .setDateLstUpdDat(dateLstUpdDat.toString())
-                .setOrdrQty(ordrQty.toString())
-                .setOrdrPrc(ordrPrc.toString())
-                .setOrdrEntTim(ordrEntTim.toString())
-                .setAmount(amount.toString())
-                .setPartSubGrpIdCod(partSubGrpIdCod.toString())
-                .setPartNoTxt(partNoTxt.toString())
-                .setPartOsSubGrpIdCod(partOsSubGrpIdCod.toString())
-                .setPartOsNoTxt(partOsNoTxt.toString())
-                .setAcctTypCod(acctTypCod.toString())
-                .setBrnId(brnId.toString())
-                .setUserOrdNum(userOrdNum.toString())
-                .setText(text.toString())
-                .setDeletedFlag(deletedFlag.toString())
-                .setStatusFlag(statusFlag.toString());
-        rpcReq.setRequestObject(orderData);
-
-        return true;
+            OrderData orderData = new OrderData().setNonTrdTypCod(nonTrdTypCod.toString())
+                    .setInvtAcctID(invtAcctID.toString())
+                    .setMembExcIdCod(membExcIdCod.toString())
+                    .setOrdrNo(ordrNo.toString())
+                    .setDateLstUpdDat(dateLstUpdDat.toString())
+                    .setOrdrQty(ordrQty.toString())
+                    .setOrdrPrc(ordrPrc.toString())
+                    .setOrdrEntTim(ordrEntTim.toString())
+                    .setAmount(amount.toString())
+                    .setPartSubGrpIdCod(partSubGrpIdCod.toString())
+                    .setPartNoTxt(partNoTxt.toString())
+                    .setPartOsSubGrpIdCod(partOsSubGrpIdCod.toString())
+                    .setPartOsNoTxt(partOsNoTxt.toString())
+                    .setAcctTypCod(acctTypCod.toString())
+                    .setBrnId(brnId.toString())
+                    .setUserOrdNum(userOrdNum.toString())
+                    .setText(text.toString())
+                    .setDeletedFlag(deletedFlag.toString())
+                    .setStatusFlag(statusFlag.toString());
+            rpcReq.setRequestObject(orderData);
+            return true;
+        }else {
+            ByteBuf byteBuf = Unpooled.wrappedBuffer(content);
+            System.out.println("反序列化错误：" + byteBuf.toString(Charset.defaultCharset()));
+            return false;
+        }
     }
 
     /**
