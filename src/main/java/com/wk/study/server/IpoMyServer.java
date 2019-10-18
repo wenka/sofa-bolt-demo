@@ -77,12 +77,12 @@ class IpoServerUserProcessor extends AsyncUserProcessor<Object> {
         public void run() {
             MyResponse myResponse = new MyResponse();
             if (myRequest != null) {
-                if (MSG_COUNT.get() == 0){
+                if (MSG_COUNT.get() == 0) {
                     time = System.currentTimeMillis();
                 }
-                if (MSG_COUNT.incrementAndGet() % 50000 == 0){
+                if (MSG_COUNT.incrementAndGet() % 50000 == 0) {
                     long l = System.currentTimeMillis();
-                    System.out.println("OrderData 请求[" + (MSG_COUNT.get()) + "] 耗时：" + (l-time));
+                    System.out.println("OrderData 请求[" + (MSG_COUNT.get()) + "] 耗时：" + (l - time));
                     time = l;
                 }
                 RabbitmqUtil.sendMessage(myRequest);
@@ -99,6 +99,7 @@ class IpoServerUserProcessor extends AsyncUserProcessor<Object> {
 class IpoSycnServerUserProcessor extends SyncUserProcessor<Object> {
     private static AtomicInteger MSG_COUNT = new AtomicInteger(0);
     private static volatile long time = 0;
+
     @Override
     public BizContext preHandleRequest(RemotingContext remotingCtx, Object request) {
         return super.preHandleRequest(remotingCtx, request);
@@ -107,12 +108,12 @@ class IpoSycnServerUserProcessor extends SyncUserProcessor<Object> {
     public Object handleRequest(BizContext bizContext, Object myRequest) throws Exception {
         MyResponse myResponse = new MyResponse();
         if (myRequest != null) {
-            if (MSG_COUNT.get() == 0){
+            if (MSG_COUNT.get() == 0) {
                 time = System.currentTimeMillis();
             }
-            if (MSG_COUNT.incrementAndGet() % 100000 == 0){
+            if (MSG_COUNT.incrementAndGet() % 100000 == 0) {
                 long l = System.currentTimeMillis();
-                System.out.println("OrderData 请求[" + (MSG_COUNT.get()) + "] 耗时：" + (l-time));
+                System.out.println("OrderData 请求[" + (MSG_COUNT.get()) + "] 耗时：" + (l - time));
                 time = l;
             }
             RabbitmqUtil.sendMessage(myRequest);
@@ -128,6 +129,18 @@ class IpoSycnServerUserProcessor extends SyncUserProcessor<Object> {
      */
     public String interest() {
         return OrderData.class.getName();
+    }
+
+    /**
+     * 默认情况下，我们使用最佳实践的线程模型来处理请求，即尽可能少的占用 IO 线程，
+     * 但有一些场景，比如计算过程非常简单，希望减少线程切换，尽可能大的增加 IO 吞吐量的场景。
+     * 此时我们提供了一个开关，来让业务处理也在 IO 线程执行。
+     *
+     * @return
+     */
+    @Override
+    public boolean processInIOThread() {
+        return true;
     }
 }
 
